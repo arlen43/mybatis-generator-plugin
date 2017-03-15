@@ -11,6 +11,8 @@ import java.util.List;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.PluginAdapter;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
+import org.mybatis.generator.api.dom.java.InnerClass;
+import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
@@ -61,6 +63,20 @@ public class PagePlugin extends PluginAdapter {
 				bodyLineList.add("pageFlag = false;");
 				bodyLineList.add("offset = 0;");
 				bodyLineList.add("limit = 0;");
+			}
+		}
+		
+		// 修改GeneratedCriteria类的addCriterion方法为public，实现手动添加condition的目的
+		List<InnerClass> innerClassList = topLevelClass.getInnerClasses();
+		for (InnerClass innerClass : innerClassList) {
+			if ("GeneratedCriteria".equals(innerClass.getType().getShortName())) {
+				// 遍历方法
+				List<Method> innerMethods = innerClass.getMethods();
+				for (Method method : innerMethods) {
+					if ("addCriterion".equals(method.getName())) {
+						method.setVisibility(JavaVisibility.PUBLIC);
+					}
+				}
 			}
 		}
 		return true;
