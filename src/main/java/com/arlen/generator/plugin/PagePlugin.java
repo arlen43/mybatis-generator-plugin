@@ -8,6 +8,7 @@ package com.arlen.generator.plugin;
 
 import java.util.List;
 
+import org.mybatis.generator.api.FullyQualifiedTable;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.PluginAdapter;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
@@ -16,6 +17,7 @@ import org.mybatis.generator.api.dom.java.JavaVisibility;
 import org.mybatis.generator.api.dom.java.Method;
 import org.mybatis.generator.api.dom.java.TopLevelClass;
 import org.mybatis.generator.api.dom.xml.Attribute;
+import org.mybatis.generator.api.dom.xml.Element;
 import org.mybatis.generator.api.dom.xml.TextElement;
 import org.mybatis.generator.api.dom.xml.XmlElement;
 
@@ -24,7 +26,7 @@ import com.arlen.generator.log.LogUtil;
 /** 
  * 项目名称：mybatis-generator-plugin <br>
  * 类名称：PagePlugin <br>
- * 类描述：生成mapper、java类带分页<br>
+ * 类描述：生成mapper、java类带分页，同时修改Example类的相关内容<br>
  * 创建人：arlen <br>
  * 创建时间：2017年2月9日 下午6:56:25 <br>
  * @version 1.0
@@ -75,10 +77,15 @@ public class PagePlugin extends PluginAdapter {
 				for (Method method : innerMethods) {
 					if ("addCriterion".equals(method.getName())) {
 						method.setVisibility(JavaVisibility.PUBLIC);
+						method.addJavaDocLine("/**");
+						method.addJavaDocLine(" * 手动添加条件，不建议直接调用");
+						method.addJavaDocLine(" */");
 					}
 				}
 			}
 		}
+		
+		// 添加默认del_flag = 0条件的 or、createCriteria方法
 		return true;
 	}
 
@@ -111,5 +118,21 @@ public class PagePlugin extends PluginAdapter {
 		pageElement.addElement(new TextElement("limit #{limit,jdbcType=INTEGER} offset #{offset,jdbcType=INTEGER}"));
 		element.addElement(element.getElements().size(), pageElement);
 	}
+
+	/**
+	 * bug 修复，如果有别名，默认生成的是有问题的<br>
+	 * 默认： delete from table_a a;<br>
+	 * 修改后：delete a from table_a a;
+	 */
+	@Override
+	public boolean sqlMapDeleteByExampleElementGenerated(XmlElement element, IntrospectedTable introspectedTable) {
+		Element firstEle = element.getElements().get(0);
+		if (firstEle instanceof TextElement) {
+			FullyQualifiedTable qualifiedTable = introspectedTable.getFullyQualifiedTable();
+			element.getElements().set(0, new TextElement("delete " + qualifiedTable.getAlias() + " from " + qualifiedTable.getAliasedFullyQualifiedTableNameAtRuntime()));
+		}
+		return super.sqlMapDeleteByExampleElementGenerated(element, introspectedTable);
+	}
+	
 	
 }

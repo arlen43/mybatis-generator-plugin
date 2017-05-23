@@ -122,7 +122,9 @@ public class DictionaryAnnotationPlugin extends PluginAdapter {
 		
 		if (dictResult.cnFlag) {
 			String fieldNameCN = fieldName + "NameCN";
-			PluginUtil.addClazzField(topLevelClass, fieldNameCN, FullyQualifiedJavaType.getStringInstance(), comment);
+			if (!PluginUtil.hasField(topLevelClass, fieldNameCN)) {
+				PluginUtil.addClazzField(topLevelClass, fieldNameCN, FullyQualifiedJavaType.getStringInstance(), comment);
+			}
 			PluginUtil.addClazzGetMethod(topLevelClass, fieldNameCN, FullyQualifiedJavaType.getStringInstance(), comment);
 			PluginUtil.addClazzSetMethod(topLevelClass, fieldNameCN, FullyQualifiedJavaType.getStringInstance(), comment);
 		}
