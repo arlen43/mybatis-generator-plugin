@@ -68,7 +68,7 @@ public class DBColumnCommentPlugin extends PluginAdapter {
 		if (comment != null && comment.trim().length() > 0) {
 			Parameter param = method.getParameters().get(0);
 			method.addJavaDocLine("/**");
-			method.addJavaDocLine(" * @param " + param + " " + introspectedColumn.getRemarks());
+			method.addJavaDocLine(" * @param " + param.getName() + " " + param.getType().getShortName() + " " + introspectedColumn.getRemarks());
 			method.addJavaDocLine(" */");
 		}
 		return super.modelSetterMethodGenerated(method, topLevelClass, introspectedColumn, introspectedTable, modelClassType);
